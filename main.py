@@ -250,5 +250,8 @@ async def ocr_extract_one_shot(file: UploadFile = File(...), lang: str = Query("
 @app.api_route("/", methods=["GET", "HEAD"], tags=["Health"])
 def root():
     return {"status": "ok", "message": "Receipt OCR API is running. Visit /docs for API docs."}
+@app.get("/health", tags=["Health"])
+def health():
+    return {"status": "healthy"}
 
 
