@@ -8,4 +8,3 @@ pytesseract
 numpy
 python-jose[cryptography]
 python-multipart
-tesseract-ocr
