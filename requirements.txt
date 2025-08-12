@@ -1,9 +1,9 @@
 fastapi
 uvicorn
-python-multipart
+python-dotenv
 openai
-opencv-python-headless
 pillow
+opencv-python-headless
 pytesseract
 numpy
-python-dotenv
+python-jose[cryptography]
