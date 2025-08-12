@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import secrets
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Depends, Request
 
 # ---------------- Config ----------------
 SECRET_KEY = "supersecretkey"  # Replace for production
@@ -83,11 +84,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_current_user(token: str = Depends(lambda: None)):
-    from fastapi import Request
+def get_current_user(request: Request):  # ← accept Request directly
     from fastapi.security import HTTPBearer
     security = HTTPBearer()
-    request = Request(scope={})
     try:
         scheme, credentials = security(request)
         token = credentials
@@ -101,12 +100,6 @@ def get_current_user(token: str = Depends(lambda: None)):
         return email
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid JWT")
-
-def get_user_by_api_key(api_key: str):
-    for email, user in users_db.items():
-        if api_key in user["api_keys"]:
-            return email
-    raise HTTPException(status_code=401, detail="Invalid API key")
 
 # ---------------- Image helpers ----------------
 def _resize_if_huge(bgr: np.ndarray, max_side: int = 1024) -> np.ndarray:
@@ -209,6 +202,15 @@ def generate_api_key(data: APIKeyModel, email: str = Depends(get_current_user)):
     users_db[email]["api_keys"].append(key)
     return {"name": data.name, "key": key}
 
+
+# ---------------- Root & Health ----------------
+@app.api_route("/", methods=["GET", "HEAD"], tags=["Health"])
+def root():
+    return {"status": "ok", "message": "Receipt OCR API is running. Visit /docs for API docs."}
+
+@app.get("/health", tags=["Health"])
+def health():
+    return {"status": "healthy"}
 # ---------------- Receipt Upload Flow ----------------
 @app.post("/api/receipts/upload")
 def upload_receipt_meta(meta: UploadMetaModel, x_api_key: str = Query(...)):
