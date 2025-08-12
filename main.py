@@ -245,3 +245,8 @@ async def ocr_extract_one_shot(file: UploadFile = File(...), lang: str = Query("
     tesseract_res = run_tesseract(pre_bin, lang, psm, oem)
     extracted = extract_receipt_to_json(tesseract_res.get("text", ""), image_b64)
     return JSONResponse({"filename": file.filename, "ocr": {"tesseract": tesseract_res}, "extracted": extracted})
+
+
+@app.get("/")
+def root():
+    return {"message": "Receipt OCR API is running. Visit /docs for API documentation."}
