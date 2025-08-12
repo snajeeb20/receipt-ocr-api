@@ -7,3 +7,4 @@ opencv-python-headless
 pytesseract
 numpy
 python-jose[cryptography]
+python-multipart
