@@ -16,6 +16,8 @@ from pydantic import BaseModel
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import secrets
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 
 # ---------------- Config ----------------
 SECRET_KEY = "supersecretkey"  # Replace for production
