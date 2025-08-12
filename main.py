@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 from PIL import Image
 import pytesseract
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Depends
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Depends, Request
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from typing import Optional, Dict, Any
@@ -16,7 +16,6 @@ from pydantic import BaseModel
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import secrets
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query, Depends, Request
 
 # ---------------- Config ----------------
 SECRET_KEY = "supersecretkey"  # Replace for production
@@ -84,14 +83,13 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_current_user(request: Request):  # ← accept Request directly
-    from fastapi.security import HTTPBearer
-    security = HTTPBearer()
-    try:
-        scheme, credentials = security(request)
-        token = credentials
-    except:
+# ✅ Fixed version — now takes real Request object
+def get_current_user(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing JWT")
+
+    token = auth_header.split("Bearer ")[1]
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
@@ -100,6 +98,12 @@ def get_current_user(request: Request):  # ← accept Request directly
         return email
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid JWT")
+
+def get_user_by_api_key(api_key: str):
+    for email, user in users_db.items():
+        if api_key in user["api_keys"]:
+            return email
+    raise HTTPException(status_code=401, detail="Invalid API key")
 
 # ---------------- Image helpers ----------------
 def _resize_if_huge(bgr: np.ndarray, max_side: int = 1024) -> np.ndarray:
@@ -146,6 +150,7 @@ You receive OCR output of a retail receipt. Fix obvious OCR errors and return ON
 - Include Items as an array (name/qty/price/tax when detectable).
 - If any field cannot be found, look again in the OCR output extract.
 - You can also use the image to extract the correct JSON value along with the OCR extract.
+- You are an intelligent LLM, be createive and effective in populating the values in JOSN.
 - Return ONLY the JSON per the provided schema—no extra text.
 """
 
@@ -202,15 +207,6 @@ def generate_api_key(data: APIKeyModel, email: str = Depends(get_current_user)):
     users_db[email]["api_keys"].append(key)
     return {"name": data.name, "key": key}
 
-
-# ---------------- Root & Health ----------------
-@app.api_route("/", methods=["GET", "HEAD"], tags=["Health"])
-def root():
-    return {"status": "ok", "message": "Receipt OCR API is running. Visit /docs for API docs."}
-
-@app.get("/health", tags=["Health"])
-def health():
-    return {"status": "healthy"}
 # ---------------- Receipt Upload Flow ----------------
 @app.post("/api/receipts/upload")
 def upload_receipt_meta(meta: UploadMetaModel, x_api_key: str = Query(...)):
@@ -248,12 +244,10 @@ async def ocr_extract_one_shot(file: UploadFile = File(...), lang: str = Query("
     extracted = extract_receipt_to_json(tesseract_res.get("text", ""), image_b64)
     return JSONResponse({"filename": file.filename, "ocr": {"tesseract": tesseract_res}, "extracted": extracted})
 
-
 @app.api_route("/", methods=["GET", "HEAD"], tags=["Health"])
 def root():
     return {"status": "ok", "message": "Receipt OCR API is running. Visit /docs for API docs."}
+
 @app.get("/health", tags=["Health"])
 def health():
     return {"status": "healthy"}
-
-
