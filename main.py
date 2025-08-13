@@ -111,6 +111,7 @@ You receive OCR output of a retail receipt. Fix obvious OCR errors and return ON
 - You can also use the image to extract the correct JSON value along with the OCR extract.
 - You are an intelligent LLM, be createive and effective in populating the values in JOSN.
 - Return ONLY the JSON per the provided schema—no extra text.
+- Ensure the extraction includes datetime, grand total and bill number
 """
 
 def _safe_json_loads(txt: str) -> Dict[str, Any]:
