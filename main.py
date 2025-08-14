@@ -112,6 +112,7 @@ You receive OCR output of a retail receipt. Fix obvious OCR errors and return ON
 - You are an intelligent LLM, be createive and effective in populating the values in JOSN.
 - Return ONLY the JSON per the provided schema—no extra text.
 - Ensure the extraction also includes shop name, grand total, fbr invoice, address, datetime, grand total and bill number.
+-Remember dates are all of 2025 year and onwards
 """
 
 def _safe_json_loads(txt: str) -> Dict[str, Any]:
