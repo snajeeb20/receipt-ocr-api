@@ -113,10 +113,6 @@ You receive OCR output of a retail receipt. Fix obvious OCR errors and return ON
 - Return ONLY the JSON per the provided schema—no extra text.
 - Ensure the extraction also includes shop name, grand total, fbr invoice, address, datetime, grand total and bill number.
 - Remember dates are all of the current year.
-- Return JSON only. Do not add commentary.
-- Read characters exactly as printed (no auto-corrections or assumptions).
-- NEVER infer the year or use today's date. If the year digits are unclear, set "iso_datetime" to null.
-- Before reply back the response, ensure the year in the date time and in the image are correct.
 """
 
 def _safe_json_loads(txt: str) -> Dict[str, Any]:
