@@ -114,7 +114,7 @@ You receive OCR output of a retail receipt. Fix obvious OCR errors and return ON
 - Ensure the extraction also includes shop name, grand total, fbr invoice, address, datetime, grand total and bill number.
 - Remember dates are all of the current year.
 - Perform additional analysis on the year of the date extracted from picture.
-- Year in the date can not be from 2023.
+- In case year character is incomplete or missing then year must be 2025 unless image shows otherwise with clarity.
 """
 
 def _safe_json_loads(txt: str) -> Dict[str, Any]:
