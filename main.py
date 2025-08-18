@@ -116,14 +116,7 @@ You receive OCR output of a retail receipt. Fix obvious OCR errors and return ON
 - Return JSON only. Do not add commentary.
 - Read characters exactly as printed (no auto-corrections or assumptions).
 - NEVER infer the year or use today's date. If the year digits are unclear, set "iso_datetime" to null.
-- Find and list EVERY date/time-like string you can see, verbatim, with ±25 characters of surrounding text.
-- Ignore store hours, copyright years, “since 19xx”, promo end dates, or generic open/close times.
-- Prefer labels near the total or items: ["Date", "Date/Time", "Time", "Invoice Date", "Bill Date", "Txn Time"].
-- If multiple candidates: choose the one closest (in layout) to “Total/Grand Total/Net Amount” or to the item list.
-- Accept formats like: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD HH:MM(:SS), DD-MMM-YYYY HH:MM AM/PM, YYMMDDHHMM, etc.
-- Allowed year range: [2015 .. (current_year + 1)] only.
-- If two-digit year, interpret as 20YY where YY in [15..(current_year+1)%100]; otherwise leave null.
-
+- Before reply back the response, ensure the year in the date time and in the image are correct.
 """
 
 def _safe_json_loads(txt: str) -> Dict[str, Any]:
